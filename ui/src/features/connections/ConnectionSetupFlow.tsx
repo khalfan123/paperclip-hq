@@ -984,7 +984,16 @@ function StandardConnectionSetupFlow({
     && !connectionMethodSupportsAutomaticOAuth(candidate),
   );
   const selectedCustomOAuth = Boolean(customOAuthMethod && connectionMethodKey === customOAuthMethod.key);
-  const requestedDefinitionUsesManagedConnector = !selectedCustomOAuth && Boolean(
+  // This HQ never enrolls with Paperclip Cloud, so a self-owned method the gallery advertises must stay usable.
+  const selectedAdvertisedSelfOwnedMethod = Boolean(
+    connectionMethodKey
+    && entry?.methods.some((candidate) =>
+      candidate.key === connectionMethodKey
+      && candidate.oauthStrategy !== "paperclip_cloud_connector"
+      && candidate.oauthStrategy !== "paperclip_id_connector"
+    ),
+  );
+  const requestedDefinitionUsesManagedConnector = !selectedCustomOAuth && !selectedAdvertisedSelfOwnedMethod && Boolean(
     fullRequestedDefinition?.methods.some((candidate) =>
       candidate.oauthStrategy === "paperclip_cloud_connector"
       || candidate.oauthStrategy === "paperclip_id_connector"
